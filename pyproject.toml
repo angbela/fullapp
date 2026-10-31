@@ -1,0 +1,42 @@
+[project]
+name = "fullapp"
+version = "0.1.0"
+description = "Unified marine and coastal analysis tools"
+readme = "README.md"
+authors = [
+    { name = "angbela" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "cdsapi",
+    "ecmwf-datastores-client",
+    "ezdxf",
+    "geopandas",
+    "geopy",
+    "kaleido==0.2.1",
+    "matplotlib",
+    "netcdf4",
+    "numpy",
+    "openpyxl",
+    "pandas",
+    "plotly",
+    "pydeck",
+    "pyproj",
+    "rectpack",
+    "requests",
+    "rtide",
+    "scikit-learn",
+    "scipy",
+    "shapely",
+    "streamlit",
+    "tensorflow",
+    "utide",
+    "xarray",
+]
+
+[project.scripts]
+fullapp = "fullapp:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"

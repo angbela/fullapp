@@ -1,0 +1,14 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local Streamlit credentials and generated mesh-processing files
+.streamlit/secrets.toml
+pages/under_development/outputs/
