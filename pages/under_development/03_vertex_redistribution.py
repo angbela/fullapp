@@ -5,6 +5,7 @@ import hashlib
 import uuid
 import tempfile
 import sys
+from importlib import import_module
 import numpy as np
 import streamlit as st
 import matplotlib
@@ -15,10 +16,7 @@ from matplotlib.patches import Circle
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, APP_ROOT)
 
-from mesh_density import (
-    extract_polylines, split_domain_polyline, classify_polyline_category,
-    redistribute_polyline, snap_and_pin_endpoints, export_xyz, export_dxf,
-)
+mesh_density = import_module('06_mesh_density')
 
 OUTPUT_DIR = os.path.join(APP_ROOT, 'outputs')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -79,14 +77,14 @@ def job_dir(job_id):
 
 
 def load_and_process_dxf(filepath, target_layers=None):
-    polylines = extract_polylines(filepath, target_layers=target_layers)
+    polylines = mesh_density.extract_polylines(filepath, target_layers=target_layers)
     all_polys = []
     for p in polylines:
         if p['layer'].lower() == 'domain':
-            segs = split_domain_polyline(p)
+            segs = mesh_density.split_domain_polyline(p)
             all_polys.extend(segs)
         else:
-            cat = classify_polyline_category(p)
+            cat = mesh_density.classify_polyline_category(p)
             p['category'] = cat
             if cat == 'boundary':
                 p['color'] = '#ff0000'
@@ -99,7 +97,7 @@ def polylines_to_geojson(polylines):
     ys = []
     features = []
     for i, p in enumerate(polylines):
-        cat = p.get('category', classify_polyline_category(p))
+        cat = p.get('category', mesh_density.classify_polyline_category(p))
         if cat == 'boundary':
             stroke = '#ff0000'
             width = 3
@@ -470,7 +468,7 @@ def step3_process():
     total_after = 0
     N = len(polylines2)
     for i, p in enumerate(polylines2):
-        new_coords = redistribute_polyline(p['coords'], params)
+        new_coords = mesh_density.redistribute_polyline(p['coords'], params)
         p_new = dict(p)
         p_new['coords'] = new_coords
         total_after += len(new_coords)
@@ -479,17 +477,17 @@ def step3_process():
         progress_bar.progress(pct, text=f'Processing segment {i + 1}/{N}...')
 
     progress_bar.progress(82, text='Snapping & pinning endpoints...')
-    redistributed = snap_and_pin_endpoints(redistributed)
+    redistributed = mesh_density.snap_and_pin_endpoints(redistributed)
 
     save_dir = job_dir(job_id)
 
     progress_bar.progress(87, text='Exporting XYZ scatter file...')
     xyz_path = os.path.join(save_dir, 'redistributed_points.xyz')
-    export_xyz(redistributed, xyz_path)
+    mesh_density.export_xyz(redistributed, xyz_path)
 
     progress_bar.progress(91, text='Exporting DXF file...')
     dxf_path = os.path.join(save_dir, 'redistributed.dxf')
-    export_dxf(redistributed, dxf_path)
+    mesh_density.export_dxf(redistributed, dxf_path)
 
     progress_bar.progress(94, text='Saving GeoJSON after...')
     geojson_after = polylines_to_geojson(redistributed)
